@@ -1,0 +1,43 @@
+import pandas as pd
+from openai import OpenAI
+
+# Initialize OpenAI client
+client = OpenAI(api_key="YOUR_OPENAI_API_KEY")
+
+def generate_reply(customer_message):
+    """
+    Uses AI to draft a professional customer support reply
+    """
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a professional and polite customer support assistant."
+                },
+                {
+                    "role": "user",
+                    "content": f"Draft a clear and professional reply to this message:\n{customer_message}"
+                }
+            ]
+        )
+
+        return response.choices[0].message.content.strip()
+
+    except Exception as e:
+        return f"Error generating reply: {e}"
+
+# Load customer messages
+print("Loading customer queries...")
+df = pd.read_csv("customer_queries.csv")
+
+# Generate AI replies
+print("Drafting AI responses...")
+df["AI_Draft"] = df["Message"].apply(generate_reply)
+
+# Save output
+df.to_csv("replies_ready_to_send.csv", index=False)
+
+print("Automation complete!")
+print("Check the file: replies_ready_to_send.csv")
